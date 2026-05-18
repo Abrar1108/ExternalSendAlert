@@ -132,11 +132,43 @@ function onMessageSendHandler(event) {
 }
 
 // ============================================================================
+// RIBBON BUTTON: Passive check (no send event to block)
+// ============================================================================
+function onButtonClickHandler(event) {
+    var item = Office.context.mailbox.item;
+    getAllRecipients(item).then(function(allRecipients) {
+        var externals = getExternalRecipients(allRecipients);
+        if (externals.length > 0) {
+            var externalList = externals.length <= 3
+                ? externals.join(", ")
+                : externals.slice(0, 3).join(", ") + " (+" + (externals.length - 3) + " more)";
+            item.notificationMessages.replaceAsync("externalWarning", {
+                type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+                message: "External recipients detected: " + externalList,
+                icon: "Icon.16x16",
+                persistent: false
+            });
+        } else {
+            item.notificationMessages.replaceAsync("externalClear", {
+                type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+                message: "All recipients are internal.",
+                icon: "Icon.16x16",
+                persistent: false
+            });
+        }
+        event.completed();
+    }).catch(function() {
+        event.completed();
+    });
+}
+
+// ============================================================================
 // FUNCTION ASSOCIATION — Wrapped in Office.onReady for safe initialization
 // ============================================================================
 Office.onReady(function() {
     if (Office.actions && Office.actions.associate) {
         Office.actions.associate("onMessageSendHandler", onMessageSendHandler);
         Office.actions.associate("onRecipientsChangedHandler", onRecipientsChangedHandler);
+        Office.actions.associate("onButtonClickHandler", onButtonClickHandler);
     }
 });

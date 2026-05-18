@@ -169,5 +169,4 @@ function onButtonClickHandler(event) {
 // and Office.initialize isn't run."
 // ============================================================================
 Office.actions.associate("onMessageSendHandler", onMessageSendHandler);
-Office.actions.associate("onRecipientsChangedHandler", onRecipientsChangedHandler);
 Office.actions.associate("onButtonClickHandler", onButtonClickHandler);

@@ -5,7 +5,7 @@
           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
           xsi:type="MailApp">
   <Id>b5a2794d-4aa5-4023-bf28-7136f564be10</Id>
-  <Version>3.3.0.0</Version>
+  <Version>3.4.0.0</Version>
   <ProviderName>Toluna</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="ExternalSendAlert" />
@@ -76,7 +76,7 @@
           </ExtensionPoint>
           <ExtensionPoint xsi:type="LaunchEvent">
             <LaunchEvents>
-              <LaunchEvent Type="OnMessageSend" FunctionName="onMessageSendHandler" SendMode="PromptUser" />
+              <LaunchEvent Type="OnMessageSend" FunctionName="onMessageSendHandler" />
             </LaunchEvents>
             <SourceLocation resid="WebViewRuntime.Url"/>
           </ExtensionPoint>

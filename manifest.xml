@@ -6,7 +6,7 @@
           xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
           xsi:type="MailApp">
   <Id>b5a2794d-4aa5-4023-bf28-7136f564be10</Id>
-  <Version>1.2.0.0</Version>
+  <Version>1.3.0.0</Version>
   <ProviderName>Toluna</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="ExternalSendAlert" />
@@ -32,7 +32,7 @@
       </DesktopSettings>
     </Form>
   </FormSettings>
-  <Permissions>ReadWriteMailbox</Permissions>
+  <Permissions>ReadItem</Permissions>
   <Rule xsi:type="RuleCollection" Mode="Or">
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
   </Rule>
@@ -65,7 +65,7 @@
                     <bt:Image size="80" resid="Icon.80x80" />
                   </Icon>
                   <Action xsi:type="ExecuteFunction">
-                    <FunctionName>checkExternalAttachments</FunctionName>
+                    <FunctionName>onMessageSendHandler</FunctionName>
                   </Action>
                 </Control>
               </Group>
@@ -103,7 +103,6 @@
       </Requirements>
       <Hosts>
         <Host xsi:type="MailHost">
-          <!-- Runtime definition for event-based activation -->
           <Runtimes>
             <Runtime resid="WebViewRuntime.Url">
               <Override type="javascript" resid="JSRuntime.Url"/>
@@ -127,7 +126,7 @@
                       <bt:Image size="80" resid="Icon.80x80" />
                     </Icon>
                     <Action xsi:type="ExecuteFunction">
-                      <FunctionName>checkExternalAttachments</FunctionName>
+                      <FunctionName>onMessageSendHandler</FunctionName>
                     </Action>
                   </Control>
                 </Group>
@@ -136,7 +135,7 @@
             <!-- Event-based LaunchEvent extension point -->
             <ExtensionPoint xsi:type="LaunchEvent">
               <LaunchEvents>
-                <LaunchEvent Type="OnMessageSend" FunctionName="checkExternalAttachments" SendMode="PromptUser" />
+                <LaunchEvent Type="OnMessageSend" FunctionName="onMessageSendHandler" SendMode="PromptUser" />
                 <LaunchEvent Type="OnMessageRecipientsChanged" FunctionName="onRecipientsChangedHandler" />
               </LaunchEvents>
               <SourceLocation resid="WebViewRuntime.Url"/>

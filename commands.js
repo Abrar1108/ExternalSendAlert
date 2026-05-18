@@ -1,5 +1,5 @@
 /*
- * External Send Alert PoC — commands.js
+ * External Send Alert — commands.js
  *
  * Two layers of protection:
  * 1. OnRecipientsChanged: Shows a passive yellow info banner when external recipients are added.
@@ -9,7 +9,7 @@
 // ============================================================================
 // CONFIGURATION: Add or remove internal domains here as needed.
 // ============================================================================
-const INTERNAL_DOMAINS = [
+var INTERNAL_DOMAINS = [
     "metrixlab.com",
     "toluna.com"
     // Add future domains below, e.g.:
@@ -23,6 +23,8 @@ function getExternalRecipients(allRecipients) {
     var externals = [];
     for (var i = 0; i < allRecipients.length; i++) {
         var email = allRecipients[i].emailAddress;
+        // Guard against malformed or missing email addresses
+        if (!email || email.indexOf("@") === -1) continue;
         var domain = email.substring(email.indexOf("@") + 1).toLowerCase();
         if (INTERNAL_DOMAINS.indexOf(domain) === -1) {
             externals.push(email);
@@ -32,17 +34,24 @@ function getExternalRecipients(allRecipients) {
 }
 
 // ============================================================================
+// HELPER: Fetch all recipients (To + Cc + Bcc) concurrently
+// ============================================================================
+function getAllRecipients(item) {
+    var getTo  = new Promise(function(resolve) { item.to.getAsync(function(r)  { resolve(r.value || []); }); });
+    var getCc  = new Promise(function(resolve) { item.cc.getAsync(function(r)  { resolve(r.value || []); }); });
+    var getBcc = new Promise(function(resolve) { item.bcc.getAsync(function(r) { resolve(r.value || []); }); });
+    return Promise.all([getTo, getCc, getBcc]).then(function(results) {
+        return results[0].concat(results[1], results[2]);
+    });
+}
+
+// ============================================================================
 // EVENT 1: OnRecipientsChanged — Yellow info banner (non-intrusive)
 // ============================================================================
 function onRecipientsChangedHandler(event) {
     var item = Office.context.mailbox.item;
 
-    var getTo  = new Promise(function(resolve) { item.to.getAsync(function(r)  { resolve(r.value || []); }); });
-    var getCc  = new Promise(function(resolve) { item.cc.getAsync(function(r)  { resolve(r.value || []); }); });
-    var getBcc = new Promise(function(resolve) { item.bcc.getAsync(function(r) { resolve(r.value || []); }); });
-
-    Promise.all([getTo, getCc, getBcc]).then(function(results) {
-        var allRecipients = results[0].concat(results[1], results[2]);
+    getAllRecipients(item).then(function(allRecipients) {
         var externals = getExternalRecipients(allRecipients);
 
         if (externals.length > 0) {
@@ -50,7 +59,6 @@ function onRecipientsChangedHandler(event) {
                 ? externals.join(", ")
                 : externals.slice(0, 3).join(", ") + " (+" + (externals.length - 3) + " more)";
 
-            // Show or update the yellow info banner
             item.notificationMessages.replaceAsync("externalWarning", {
                 type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
                 message: "External recipients detected: " + externalList,
@@ -58,7 +66,6 @@ function onRecipientsChangedHandler(event) {
                 persistent: true
             });
         } else {
-            // Remove the banner if no external recipients remain
             item.notificationMessages.removeAsync("externalWarning");
         }
 
@@ -71,60 +78,65 @@ function onRecipientsChangedHandler(event) {
 // ============================================================================
 // EVENT 2: OnMessageSend — Block pop-up for ANY email to external recipients
 // ============================================================================
-function checkExternalAttachments(event) {
+function onMessageSendHandler(event) {
     var item = Office.context.mailbox.item;
 
-    var getTo  = new Promise(function(resolve) { item.to.getAsync(function(r)  { resolve(r.value || []); }); });
-    var getCc  = new Promise(function(resolve) { item.cc.getAsync(function(r)  { resolve(r.value || []); }); });
-    var getBcc = new Promise(function(resolve) { item.bcc.getAsync(function(r) { resolve(r.value || []); }); });
-    var getAtt = new Promise(function(resolve) { item.getAttachmentsAsync(function(r) { resolve(r.value || []); }); });
+    var recipientsPromise = getAllRecipients(item);
+    var attachmentsPromise = new Promise(function(resolve) {
+        item.getAttachmentsAsync(function(r) { resolve(r.value || []); });
+    });
 
-    Promise.all([getTo, getCc, getBcc, getAtt]).then(function(results) {
-        var allRecipients = results[0].concat(results[1], results[2]);
-        var allAttachments = results[3];
+    Promise.all([recipientsPromise, attachmentsPromise]).then(function(results) {
+        var allRecipients = results[0];
+        var allAttachments = results[1];
         var externals = getExternalRecipients(allRecipients);
 
         if (externals.length > 0) {
-            // Count real (non-inline) attachments for the message
-            var realAttachments = [];
+            // Count real (non-inline) attachments
+            var realAttachmentCount = 0;
             for (var j = 0; j < allAttachments.length; j++) {
                 if (!allAttachments[j].isInline) {
-                    realAttachments.push(allAttachments[j]);
+                    realAttachmentCount++;
                 }
             }
 
-            var externalList = externals.length <= 5
+            var externalList = externals.length <= 3
                 ? externals.join(", ")
-                : externals.slice(0, 5).join(", ") + " (+" + (externals.length - 5) + " more)";
+                : externals.slice(0, 3).join(", ") + " (+" + (externals.length - 3) + " more)";
 
-            var alertMessage = "EXTERNAL SEND ALERT\n\n" +
-                "You are sending an email to external recipient(s):\n" +
-                externalList + "\n\n";
+            var alertMessage = "EXTERNAL SEND ALERT\n\nExternal recipient(s): " + externalList + "\n\n";
 
-            if (realAttachments.length > 0) {
-                alertMessage += "This email contains " + realAttachments.length + " attachment(s).\n\n";
+            if (realAttachmentCount > 0) {
+                alertMessage += "Attachments: " + realAttachmentCount + ".\n\n";
             }
 
-            alertMessage += "Please verify you are authorized to send this email outside the organization.";
+            alertMessage += "Verify you are authorized to send outside the organization.";
+
+            // Safety trim to avoid Outlook truncation (max ~250 chars)
+            if (alertMessage.length > 240) {
+                alertMessage = alertMessage.substring(0, 237) + "...";
+            }
 
             event.completed({
                 allowEvent: false,
                 errorMessage: alertMessage
             });
         } else {
-            // All recipients are internal — allow send
             event.completed({ allowEvent: true });
         }
 
     }).catch(function() {
+        // Fail-open: allow send if the add-in errors out
         event.completed({ allowEvent: true });
     });
 }
 
 // ============================================================================
-// FUNCTION ASSOCIATION (Required by Outlook event-based activation)
+// FUNCTION ASSOCIATION — Wrapped in Office.onReady for safe initialization
 // ============================================================================
-if (Office.actions && Office.actions.associate) {
-    Office.actions.associate("checkExternalAttachments", checkExternalAttachments);
-    Office.actions.associate("onRecipientsChangedHandler", onRecipientsChangedHandler);
-}
+Office.onReady(function() {
+    if (Office.actions && Office.actions.associate) {
+        Office.actions.associate("onMessageSendHandler", onMessageSendHandler);
+        Office.actions.associate("onRecipientsChangedHandler", onRecipientsChangedHandler);
+    }
+});

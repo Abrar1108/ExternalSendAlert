@@ -170,3 +170,5 @@ function onButtonClickHandler(event) {
 // ============================================================================
 Office.actions.associate("onMessageSendHandler", onMessageSendHandler);
 Office.actions.associate("onButtonClickHandler", onButtonClickHandler);
+// FIX 2: Added missing association for onRecipientsChangedHandler
+Office.actions.associate("onRecipientsChangedHandler", onRecipientsChangedHandler);

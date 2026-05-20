@@ -5,7 +5,7 @@
           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
           xsi:type="MailApp">
   <Id>b5a2794d-4aa5-4023-bf28-7136f564be10</Id>
-  <Version>6.0.0.0</Version>
+  <Version>6.2.0.0</Version>
   <ProviderName>Toluna</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="ExternalSendAlert" />
@@ -27,7 +27,7 @@
   <FormSettings>
     <Form xsi:type="ItemEdit">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://abrar1108.github.io/ExternalSendAlert/commands.html"/>
+        <SourceLocation DefaultValue="https://abrar1108.github.io/ExternalSendAlert/handler_v6.html"/>
       </DesktopSettings>
     </Form>
   </FormSettings>
@@ -46,12 +46,8 @@
       </Requirements>
       <Hosts>
         <Host xsi:type="MailHost">
-          <!-- Event-based activation happens in a lightweight runtime. -->
           <Runtimes>
-            <!-- HTML file including reference to or inline JavaScript event handlers.
-                 This is used by Outlook on the web and on Mac, and new Outlook on Windows. -->
             <Runtime resid="WebViewRuntime.Url">
-              <!-- JavaScript file containing event handlers. This is used by classic Outlook on Windows. -->
               <Override type="javascript" resid="JSRuntime.Url"/>
             </Runtime>
           </Runtimes>
@@ -79,12 +75,10 @@
                 </Group>
               </OfficeTab>
             </ExtensionPoint>
-            <!-- Enable launching the add-in on the included events. -->
             <ExtensionPoint xsi:type="LaunchEvent">
               <LaunchEvents>
                 <LaunchEvent Type="OnMessageSend" FunctionName="onMessageSendHandler" SendMode="SoftBlock" />
               </LaunchEvents>
-              <!-- Identifies the runtime to be used. The resid value must match that of the Runtime element. -->
               <SourceLocation resid="WebViewRuntime.Url"/>
             </ExtensionPoint>
           </DesktopFormFactor>
@@ -97,9 +91,8 @@
           <bt:Image id="Icon.80x80" DefaultValue="https://abrar1108.github.io/ExternalSendAlert/icon-128.png"/>
         </bt:Images>
         <bt:Urls>
-          <bt:Url id="Commands.Url" DefaultValue="https://abrar1108.github.io/ExternalSendAlert/commands.html" />
-          <bt:Url id="WebViewRuntime.Url" DefaultValue="https://abrar1108.github.io/ExternalSendAlert/commands.html" />
-          <!-- Entry needed for classic Outlook on Windows. -->
+          <bt:Url id="Commands.Url" DefaultValue="https://abrar1108.github.io/ExternalSendAlert/handler_v6.html" />
+          <bt:Url id="WebViewRuntime.Url" DefaultValue="https://abrar1108.github.io/ExternalSendAlert/handler_v6.html" />
           <bt:Url id="JSRuntime.Url" DefaultValue="https://abrar1108.github.io/ExternalSendAlert/commands.js" />
         </bt:Urls>
         <bt:ShortStrings>

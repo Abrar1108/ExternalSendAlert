@@ -5,7 +5,7 @@
           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
           xsi:type="MailApp">
   <Id>b5a2794d-4aa5-4023-bf28-7136f564be10</Id>
-  <Version>5.0.0.1</Version>
+  <Version>5.0.0.2</Version>
   <ProviderName>Toluna</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="SendShield" />
@@ -83,41 +83,6 @@
               <SourceLocation resid="WebViewRuntime.Url"/>
             </ExtensionPoint>
           </DesktopFormFactor>
-          <MobileFormFactor>
-            <Runtimes>
-              <Runtime resid="WebViewRuntime.Url">
-                <Override type="javascript" resid="JSRuntime.Url"/>
-              </Runtime>
-            </Runtimes>
-            <ExtensionPoint xsi:type="MessageComposeCommandSurface">
-              <MobileExtensionPoint>
-                <DesktopFormFactor>
-                  <Control xsi:type="Button" id="msgComposeOpenPaneButton">
-                    <Label resid="TaskpaneButton.Label"/>
-                    <Supertip>
-                      <Title resid="TaskpaneButton.Label"/>
-                      <Description resid="TaskpaneButton.Tooltip"/>
-                    </Supertip>
-                    <Icon>
-                      <bt:Image size="16" resid="Shield.16x16"/>
-                      <bt:Image size="32" resid="Shield.32x32"/>
-                      <bt:Image size="80" resid="Shield.80x80"/>
-                    </Icon>
-                    <Action xsi:type="ExecuteFunction">
-                      <FunctionName>onButtonClickHandler</FunctionName>
-                    </Action>
-                  </Control>
-                </DesktopFormFactor>
-              </MobileExtensionPoint>
-            </ExtensionPoint>
-            <ExtensionPoint xsi:type="LaunchEvent">
-              <LaunchEvents>
-                <LaunchEvent Type="OnMessageSend" FunctionName="onMessageSendHandler" SendMode="PromptUser"/>
-                <LaunchEvent Type="OnMessageRecipientsChanged" FunctionName="onRecipientsChangedHandler"/>
-              </LaunchEvents>
-              <SourceLocation resid="WebViewRuntime.Url"/>
-            </ExtensionPoint>
-          </MobileFormFactor>
         </Host>
       </Hosts>
       <Resources>

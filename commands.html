@@ -1,62 +1,16 @@
 <!DOCTYPE html>
-<!--
- * File 2: The UI Container (commands.html)
- * Purpose: Securely loads Office.js library and references the background JavaScript file.
- * Includes inline safety net to prevent "taking longer than expected" dialog.
--->
 <html>
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <!-- Prevent Outlook from caching this page -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>External Send Alert PoC</title>
-    
+    <title>External Send Alert</title>
+
     <!-- Microsoft Office JavaScript API -->
     <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-    
-    <!--
-      SAFETY NET: If commands.js fails to load or has errors,
-      this inline script ensures event.completed() is always called
-      so Outlook never shows "taking longer than expected".
-    -->
-    <script type="text/javascript">
-        var __externalJsLoaded = false;
-        
-        // Mark that external JS loaded successfully
-        function __markLoaded() { __externalJsLoaded = true; }
-        
-        // Fallback: register dummy handlers if external JS fails
-        window.addEventListener("load", function() {
-            setTimeout(function() {
-                if (!__externalJsLoaded && typeof Office !== "undefined" && Office.actions) {
-                    // External JS did NOT load — register safe fallback handlers
-                    Office.actions.associate("onMessageSendHandler", function(event) {
-                        event.completed({ allowEvent: true });
-                    });
-                    Office.actions.associate("onButtonClickHandler", function(event) {
-                        event.completed();
-                    });
-                    Office.actions.associate("onRecipientsChangedHandler", function(event) {
-                        event.completed();
-                    });
-                }
-            }, 2000);
-        });
-    </script>
-    
-    <!-- Our custom logic engine (cache-busted) -->
-    <script type="text/javascript" src="https://abrar1108.github.io/ExternalSendAlert/commands.js?v=4.9.2"></script>
-    
-    <!-- Signal that external JS loaded -->
-    <script type="text/javascript">__markLoaded();</script>
+
+    <!-- Event handler JavaScript — loaded by OWA/Mac/New Outlook. -->
+    <script type="text/javascript" src="https://abrar1108.github.io/ExternalSendAlert/commands.js"></script>
 </head>
 <body>
-    <!-- 
-      This page is required by Microsoft Outlook to host the JavaScript context.
-      It runs invisibly in the background during the OnMessageSend event. 
-    -->
 </body>
 </html>
